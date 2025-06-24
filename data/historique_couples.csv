@@ -1,7 +1,7 @@
-cheval_1,cheval_2,proba_couple,date,hippodrome,course_id,discipline,num_course
-1,1,0.0242,23/06/25,Agen,23/06/25_Agen_C1,trot,C1
-1,1,0.02399,23/06/25,Agen,23/06/25_Agen_C1,trot,C1
-1,1,0.02354,23/06/25,Agen,23/06/25_Agen_C1,trot,C1
-1,1,0.00373,23/06/25,Agen,23/06/25_Agen_C1,trot,C1
-1,1,0.00328,23/06/25,Agen,23/06/25_Agen_C1,trot,C1
-1,1,0.00307,23/06/25,Agen,23/06/25_Agen_C1,trot,C1
+cheval_1;cheval_2;proba_couple;date;hippodrome;course_id;discipline;num_course;distance
+10;15;0.99858;25/06/25;Vire;25/06/25_Vire_C4;trot;C4;2800
+10;8;0.99858;25/06/25;Vire;25/06/25_Vire_C4;trot;C4;2800
+10;4;0.99858;25/06/25;Vire;25/06/25_Vire_C4;trot;C4;2800
+15;8;0.99858;25/06/25;Vire;25/06/25_Vire_C4;trot;C4;2800
+15;4;0.99858;25/06/25;Vire;25/06/25_Vire_C4;trot;C4;2800
+8;4;0.99858;25/06/25;Vire;25/06/25_Vire_C4;trot;C4;2800

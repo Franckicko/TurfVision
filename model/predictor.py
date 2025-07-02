@@ -1,5 +1,3 @@
-# model/predictor.py
-
 import pandas as pd
 import xgboost as xgb
 import joblib
@@ -7,19 +5,18 @@ from itertools import combinations
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-
 class TurfPredictor:
     def __init__(self, train_path=None):
         self.train_path = train_path
         self.model = xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False)
         self.scaler = StandardScaler()
         self.features = [
-            'prono_rank', 'top3_1', 'top3_2', 'top4_1', 'top4_2',
+            'top3_1', 'top3_2', 'top4_1', 'top4_2',
             'a1_imp', 'a2_imp', 'a1_inf9', 'a2_inf9',
             'cplg_top3', 'cplg_top4',
             'top3_1_top4', 'top3_2_top4', 'top3_3_top4',
             'siprono1<9-A1<9', 'siprono2<9-A1<9', 'siprono3<9-A1<9',
-            'is_A1_ecart', 'is_A2_ecart',
+            'prono_rank_a1', 'prono_rank_a2',
             'top3_1_ecart', 'top3_2_ecart', 'top4_1_ecart', 'top4_2_ecart',
             'a1_imp_ecart', 'a2_imp_ecart', 'a1_inf9_ecart', 'a2_inf9_ecart',
             'cplg_top3_ecart', 'cplg_top4_ecart',
@@ -32,8 +29,15 @@ class TurfPredictor:
         if 'is_A1' not in df.columns:
             raise ValueError("❌ La colonne 'is_A1' est manquante dans le fichier d'entraînement.")
 
-        X = df[self.features]
         y = df['is_A1']
+        if y.nunique() < 2:
+            raise ValueError(f"❌ Données non équilibrées. Classes présentes : {y.unique()}")
+
+        missing_features = [f for f in self.features if f not in df.columns]
+        if missing_features:
+            raise ValueError(f"❌ Colonnes manquantes dans les données : {missing_features}")
+
+        X = df[self.features]
         return train_test_split(X, y, test_size=0.2, random_state=42)
 
     def train(self):
@@ -50,14 +54,22 @@ class TurfPredictor:
         self.scaler = joblib.load(scaler_path)
 
     def predict_top4_A1(self, df_course: pd.DataFrame):
-        X = self.scaler.transform(df_course[self.features])
         df_course = df_course.copy()
+
+        if not all(f in df_course.columns for f in self.features):
+            raise ValueError("❌ Certaines features manquent dans les données de course.")
+
+        X = self.scaler.transform(df_course[self.features])
         df_course["proba_A1"] = self.model.predict_proba(X)[:, 1]
         return df_course.sort_values("proba_A1", ascending=False).head(4)
 
     def predict_couple_gagnant(self, df_course: pd.DataFrame):
-        X = self.scaler.transform(df_course[self.features])
         df_course = df_course.copy()
+
+        if not all(f in df_course.columns for f in self.features):
+            raise ValueError("❌ Certaines features manquent dans les données de course.")
+
+        X = self.scaler.transform(df_course[self.features])
         df_course["proba_A1"] = self.model.predict_proba(X)[:, 1]
 
         top_chevaux = df_course.sort_values("proba_A1", ascending=False).head(4)
@@ -71,3 +83,14 @@ class TurfPredictor:
             })
 
         return pd.DataFrame(couples).sort_values("proba_couple", ascending=False).head(6)
+
+    @staticmethod
+    def required_ecart_columns():
+        return [
+            'top3_1_ecart', 'top3_2_ecart',
+            'top4_1_ecart', 'top4_2_ecart',
+            'a1_imp_ecart', 'a2_imp_ecart',
+            'a1_inf9_ecart', 'a2_inf9_ecart',
+            'cplg_top3_ecart', 'cplg_top4_ecart',
+            'top3_1_top4_ecart', 'top3_2_top4_ecart', 'top3_3_top4_ecart'
+        ]
